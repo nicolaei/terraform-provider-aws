@@ -1,0 +1,3 @@
+```release-note:note
+resource/aws_s3_bucket: The `acl` and `grant` arguments have been deprecated to prepare for the next major version where they will become read-only
+```
