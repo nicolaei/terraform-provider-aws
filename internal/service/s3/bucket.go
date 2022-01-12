@@ -81,6 +81,7 @@ func ResourceBucket() *schema.Resource {
 				Optional:      true,
 				ConflictsWith: []string{"grant"},
 				ValidateFunc:  validation.StringInSlice(BucketCannedACL_Values(), false),
+				Deprecated:    "Will be read-only in the next major version",
 			},
 
 			"grant": {
@@ -91,8 +92,9 @@ func ResourceBucket() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:       schema.TypeString,
+							Optional:   true,
+							Deprecated: "Will be read-only in the next major version",
 						},
 						"type": {
 							Type:     schema.TypeString,
@@ -102,10 +104,12 @@ func ResourceBucket() *schema.Resource {
 								s3.TypeCanonicalUser,
 								s3.TypeGroup,
 							}, false),
+							Deprecated: "Will be read-only in the next major version",
 						},
 						"uri": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:       schema.TypeString,
+							Optional:   true,
+							Deprecated: "Will be read-only in the next major version",
 						},
 
 						"permissions": {
@@ -116,9 +120,11 @@ func ResourceBucket() *schema.Resource {
 								Type:         schema.TypeString,
 								ValidateFunc: validation.StringInSlice(s3.Permission_Values(), false),
 							},
+							Deprecated: "Will be read-only in the next major version",
 						},
 					},
 				},
+				Deprecated: "Will be read-only in the next major version",
 			},
 
 			"policy": {
