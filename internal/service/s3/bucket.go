@@ -126,6 +126,7 @@ func ResourceBucket() *schema.Resource {
 				Optional:         true,
 				ValidateFunc:     validation.StringIsJSON,
 				DiffSuppressFunc: verify.SuppressEquivalentPolicyDiffs,
+				Deprecated:       "Will be read-only in the next major version. Use the aws_s3_bucket_policy resource instead.",
 			},
 
 			"cors_rule": {
