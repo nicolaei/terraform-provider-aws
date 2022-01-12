@@ -605,6 +605,8 @@ func TestAccDynamoDBTable_BillingModeGSI_payPerRequestToProvisioned(t *testing.T
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckInitialTableExists(resourceName, &conf),
 					resource.TestCheckResourceAttr(resourceName, "billing_mode", dynamodb.BillingModePayPerRequest),
+					resource.TestCheckResourceAttr(resourceName, "read_capacity", "0"),
+					resource.TestCheckResourceAttr(resourceName, "write_capacity", "0"),
 				),
 			},
 			{

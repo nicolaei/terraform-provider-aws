@@ -43,7 +43,7 @@ func ResourceTable() *schema.Resource {
 			Update: schema.DefaultTimeout(updateTableTimeoutTotal),
 		},
 
-		CustomizeDiff: customdiff.Sequence(
+		CustomizeDiff: customdiff.All(
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return validStreamSpec(diff)
 			},
@@ -67,6 +67,32 @@ func ResourceTable() *schema.Resource {
 					}
 				}
 				return nil
+			},
+			func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+				if v := diff.Get("restore_source_name"); v != "" {
+					return nil
+				}
+
+				var err *multierror.Error
+				billingMode := diff.Get("billing_mode")
+				readCapacity := diff.Get("read_capacity").(int)
+				writeCapacity := diff.Get("write_capacity").(int)
+				if billingMode == dynamodb.BillingModeProvisioned {
+					if readCapacity < 1 {
+						err = multierror.Append(err, fmt.Errorf("read_capacity must be at least 1 when billing_mode is %q", dynamodb.BillingModeProvisioned))
+					}
+					if writeCapacity < 1 {
+						err = multierror.Append(err, fmt.Errorf("write_capacity must be at least 1 when billing_mode is %q", dynamodb.BillingModeProvisioned))
+					}
+				} else if billingMode == dynamodb.BillingModePayPerRequest {
+					if readCapacity != 0 {
+						err = multierror.Append(err, fmt.Errorf("read_capacity can not be set when billing_mode is %q: is %d", dynamodb.BillingModePayPerRequest, readCapacity))
+					}
+					if writeCapacity != 0 {
+						err = multierror.Append(err, fmt.Errorf("write_capacity can not be set when billing_mode is %q: is %d", dynamodb.BillingModePayPerRequest, writeCapacity))
+					}
+				}
+				return err.ErrorOrNil()
 			},
 			verify.SetTagsDiff,
 		),
@@ -108,13 +134,10 @@ func ResourceTable() *schema.Resource {
 				},
 			},
 			"billing_mode": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  dynamodb.BillingModeProvisioned,
-				ValidateFunc: validation.StringInSlice([]string{
-					dynamodb.BillingModePayPerRequest,
-					dynamodb.BillingModeProvisioned,
-				}, false),
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      dynamodb.BillingModeProvisioned,
+				ValidateFunc: validation.StringInSlice(dynamodb.BillingMode_Values(), false),
 			},
 			"global_secondary_index": {
 				Type:     schema.TypeSet,
